@@ -1,5 +1,5 @@
 import { NextFunction } from "express";
-import { Specialty } from "../../../generated/prisma/client";
+import { Specialty } from "../../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma";
 
 const createSpecialty = async (payload: Specialty): Promise<Specialty> => {
