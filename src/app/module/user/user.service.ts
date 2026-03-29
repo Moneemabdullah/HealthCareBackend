@@ -1,0 +1,115 @@
+import { Role, Specialty } from "../../../generated/prisma/client";
+import { auth } from "../../lib/auth";
+import { prisma } from "../../lib/prisma";
+import { ICreateDoctor } from "./user.interface";
+
+const createDoctor = async (payload: ICreateDoctor) => {
+    const specialties: Specialty[] = [];
+
+    for (const specialtyid of payload.specialties) {
+        const specialty = await prisma.specialty.findUnique({
+            where: { id: specialtyid },
+        });
+        if (!specialty) {
+            throw new Error(`Specialty with ID ${specialtyid} not found`);
+        }
+        specialties.push(specialty);
+    }
+
+    const userExists = await prisma.user.findUnique({
+        where: { email: payload.doctor.email },
+    });
+
+    if (userExists) {
+        throw new Error("User with this email already exists");
+    }
+
+    const userData = await auth.api.signUpEmail({
+        body: {
+            email: payload.doctor.email,
+            password: payload.password,
+            role: Role.DOCTOR,
+            name: payload.doctor.name,
+            needPasswordChange: true,
+        },
+    });
+
+    try {
+        const result = await prisma.$transaction(async (tx) => {
+            const doctorData = await tx.doctor.create({
+                data: {
+                    userId: userData.user.id,
+                    ...payload.doctor,
+                    experience: payload.doctor.experience ?? 0,
+                },
+            });
+
+            const doctorSpecialtyData = specialties.map((specialty) => ({
+                doctorId: doctorData.id,
+                specialtyId: specialty.id,
+            }));
+
+            await tx.doctorSpecialty.createMany({
+                data: doctorSpecialtyData,
+            });
+
+            const doctor = await tx.doctor.findUnique({
+                where: { id: doctorData.id },
+                select: {
+                    id: true,
+                    userId: true,
+                    name: true,
+                    email: true,
+                    profilePhoto: true,
+                    contactNumber: true,
+                    address: true,
+                    registrationNumber: true,
+                    experience: true,
+                    appointmentsFee: true,
+                    qualifications: true,
+                    currentlyWorkingPlace: true,
+                    designation: true,
+
+                    user: {
+                        select: {
+                            id: true,
+                            email: true,
+                            name: true,
+                            role: true,
+                            status: true,
+                            emailVerified: true,
+                            image: true,
+
+                            idDeleted: true,
+                            DeletedAt: true,
+                            createdAt: true,
+                            updatedAt: true,
+                        },
+                    },
+
+                    specialties: {
+                        select: {
+                            specialty: {
+                                select: {
+                                    title: true,
+                                    id: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
+            return doctor;
+        });
+    } catch (error) {
+        await prisma.user.delete({
+            where: { id: userData.user.id },
+        });
+        throw error;
+    }
+};
+
+export const UserService = {
+    createDoctor,
+};
