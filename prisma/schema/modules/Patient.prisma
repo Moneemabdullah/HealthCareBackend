@@ -13,7 +13,12 @@ model Patient {
   //relationships
   userId String @unique
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  appointments      Appointment[]
+  medicalReports    MedicalReport[]
+  patientHealthData PatientHealthData?
+  prescriptions     Prescription[]
+  reviews           Review[]
 
   @@index([email], name: "idx_patient_email")
   @@index([isDeleted], name: "idx_patient_isDeleted")

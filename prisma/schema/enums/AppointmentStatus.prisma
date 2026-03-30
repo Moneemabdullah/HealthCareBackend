@@ -1,0 +1,6 @@
+enum AppointmentStatus {
+  SCHEDULED
+  INPROGRESS
+  COMPLETED
+  CANCELED
+}

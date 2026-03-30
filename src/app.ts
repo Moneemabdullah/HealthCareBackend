@@ -4,11 +4,13 @@ import { IndexRoute } from "./app/routes";
 import { any } from "better-auth";
 import { globalErrorHandler } from "./app/middleware/GlobalErrorHandeler";
 import notFoundMiddleware from "./app/middleware/notFound";
+import cookieParser from "cookie-parser";
 
 const app: Application = express();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(cookieParser());
 
 app.use("/api/v1", IndexRoute);
 
