@@ -7,6 +7,7 @@ import AppError from "../errorHealpers/AppError";
 import { prisma } from "../lib/prisma";
 import { cookieUtils } from "../utils/cookie";
 import { jwtUtils } from "../utils/jwt";
+import { role } from "better-auth/client";
 
 export const CheckAuth =
     (...authRoles: Role[]) =>
@@ -85,6 +86,12 @@ export const CheckAuth =
                             "Forbidden: Insufficient permissions",
                         );
                     }
+
+                    req.user = {
+                        userId: user.id,
+                        role: user.role as Role,
+                        email: user.email,
+                    };
                 }
 
                 const accessToken = cookieUtils.getCookie(req, "accessToken");
@@ -120,8 +127,7 @@ export const CheckAuth =
 
             if (
                 authRoles.length > 0 &&
-                verifiedToken.data &&
-                !authRoles.includes(verifiedToken.data.role as Role)
+                !authRoles.includes(verifiedToken.data!.role as Role)
             ) {
                 throw new AppError(
                     status.FORBIDDEN,

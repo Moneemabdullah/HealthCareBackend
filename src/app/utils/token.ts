@@ -1,5 +1,4 @@
 import { JwtPayload, SignOptions } from "jsonwebtoken";
-import ms, { StringValue } from "ms";
 import { envVars } from "../config/env";
 import { cookieUtils } from "./cookie";
 import { jwtUtils } from "./jwt";
