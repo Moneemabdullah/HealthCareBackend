@@ -5,8 +5,11 @@ import ms from "ms";
 import { Role, UserStatus } from "../../generated/prisma/client.js";
 import { prisma } from "./prisma";
 import { sendEmail } from "../utils/emailServices.js";
+import { envVars } from "../config/env.js";
 
 export const auth = betterAuth({
+    baseURL: envVars.BETTER_AUTH_URL as string,
+    secret: envVars.BETTER_AUTH_SECRET as string,
     database: prismaAdapter(prisma, {
         provider: "postgresql",
     }),
@@ -29,13 +32,26 @@ export const auth = betterAuth({
                                 name: user.name,
                                 otp,
                             },
-                        }),
-                        
-
+                        });
+                    }
+                } else if (type === "forget-password") {
+                    const user = await prisma.user.findUnique({
+                        where: { email },
+                    });
+                    if (user) {
+                        sendEmail({
+                            to: email,
+                            subject: "Reset your password",
+                            template: "otp",
+                            templateData: {
+                                name: user.name,
+                                otp,
+                            },
+                        });
                     }
                 }
             },
-            expiresIn: 2*60*1000, // 2 minutes
+            expiresIn: 2 * 60 * 1000, // 2 minutes
             otpLength: 6,
         }),
     ],
@@ -43,6 +59,27 @@ export const auth = betterAuth({
     emailAndPassword: {
         enabled: true,
         requireEmailVerification: true,
+    },
+
+    socialProviders: {
+        google: {
+            clientId: envVars.GOOGLE_CLIENT_ID as string,
+            clientSecret: envVars.GOOGLE_CLIENT_SECRET as string,
+
+            mapProfileToUser: () => {
+                return {
+                    role: Role.PATIENT,
+                    status: UserStatus.ACTIVE,
+                    needPasswordChange: false,
+                    isDeleted: false,
+                    DeletedAt: null,
+                };
+            },
+        },
+    },
+
+    redirectURLs: {
+        signIn: `${envVars.BETTER_AUTH_URL}/api/v1/auth/google/success`,
     },
 
     emailVerification: {
@@ -96,5 +133,30 @@ export const auth = betterAuth({
             ),
         },
     },
-    // trustedOrigin: process.env.TRUSTED_ORIGIN || "http://localhost:3000",
+
+    advanced: {
+        useSecureCookies: false,
+        cookies: {
+            state: {
+                attributes: {
+                    sameSite: "none",
+                    secure: true,
+                    httpOnly: true,
+                    path: "/",
+                },
+            },
+            sessionToken: {
+                attributes: {
+                    sameSite: "none",
+                    secure: true,
+                    httpOnly: true,
+                    path: "/",
+                },
+            },
+        },
+    },
+    trustedOrigin: [
+        envVars.FRONTEND_URL as string,
+        envVars.BETTER_AUTH_URL as string,
+    ],
 });

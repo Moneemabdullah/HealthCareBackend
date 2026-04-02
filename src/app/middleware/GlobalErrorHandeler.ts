@@ -5,8 +5,9 @@ import { envVars } from "../config/env";
 import AppError from "../errorHealpers/AppError";
 import { handleZodError } from "../errorHealpers/handleZodError";
 import { IErrorResponse, TErrorSource } from "../interfaces/error.interface";
+import { deleteFileFromCloudinary } from "../config/cloudinary.config";
 
-export const globalErrorHandler = (
+export const globalErrorHandler = async (
     err: any,
     req: Request,
     res: Response,
@@ -14,6 +15,16 @@ export const globalErrorHandler = (
 ) => {
     if (envVars.NODE_ENV === "development") {
         console.error(err);
+    }
+
+    if (req.file) {
+        await deleteFileFromCloudinary(req.file.path);
+    }
+
+    if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+        for (const file of req.files) {
+            await deleteFileFromCloudinary(file.path);
+        }
     }
 
     let errorSource: TErrorSource[] = [];

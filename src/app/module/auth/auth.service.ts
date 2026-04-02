@@ -237,6 +237,18 @@ const changePassword = async (
         },
     });
 
+    if (session.user.needPasswordChange)
+        [
+            await prisma.user.update({
+                where: {
+                    id: session.user.id,
+                },
+                data: {
+                    needPasswordChange: false,
+                },
+            }),
+        ];
+
     const newAccessToken = tokenUtils.getAccessToken({
         userId: session.user.id,
         role: session.user.role as Role,
@@ -295,6 +307,119 @@ const verifyEmailOTP = async (email: string, otp: string) => {
     return result;
 };
 
+const forgetPassword = async (email: string) => {
+    const isUserExist = await prisma.user.findUnique({
+        where: {
+            email,
+        },
+    });
+
+    if (!isUserExist) {
+        throw new AppError(status.NOT_FOUND, "User not found");
+    }
+
+    if (!isUserExist.emailVerified) {
+        throw new AppError(status.BAD_REQUEST, "Email is not verified");
+    }
+
+    if (isUserExist.status === UserStatus.DELETED) {
+        throw new AppError(status.FORBIDDEN, "Your account has been blocked");
+    }
+
+    const result = await auth.api.requestPasswordResetEmailOTP({
+        body: {
+            email,
+        },
+    });
+    return result;
+};
+
+const resetPassword = async (
+    email: string,
+    otp: string,
+    newPassword: string,
+) => {
+    const isUserExist = await prisma.user.findUnique({
+        where: {
+            email,
+        },
+    });
+
+    if (!isUserExist) {
+        throw new AppError(status.NOT_FOUND, "User not found");
+    }
+
+    if (!isUserExist.emailVerified) {
+        throw new AppError(status.BAD_REQUEST, "Email is not verified");
+    }
+
+    if (isUserExist.status === UserStatus.DELETED) {
+        throw new AppError(status.FORBIDDEN, "Your account has been blocked");
+    }
+
+    const result = await auth.api.resetPasswordEmailOTP({
+        body: {
+            email,
+            otp,
+            password: newPassword,
+        },
+    });
+
+    if (isUserExist.needPasswordChange) {
+        await prisma.user.update({
+            where: {
+                email,
+            },
+            data: {
+                needPasswordChange: false,
+            },
+        });
+    }
+
+    await prisma.session.deleteMany({
+        where: {
+            userId: isUserExist.id,
+        },
+    });
+
+    return result;
+};
+
+const googleLoginSuccess = async (session: Record<string, any>) => {
+    const isPatientExist = await prisma.patient.findUnique({
+        where: {
+            userId: session.user.id,
+        },
+    });
+
+    if (!isPatientExist) {
+        const patient = await prisma.patient.create({
+            data: {
+                userId: session.user.id,
+                name: session.user.name,
+                email: session.user.email,
+            },
+        });
+        return { user: session.user, patient };
+    }
+
+    const accessToken = tokenUtils.getAccessToken({
+        userId: session.user.id,
+        role: session.user.role as Role,
+        name: session.user.name,
+    });
+    const refreshToken = tokenUtils.getRefreshToken({
+        userId: session.user.id,
+        role: session.user.role as Role,
+        name: session.user.name,
+    });
+
+    return {
+        accessToken,
+        refreshToken,
+    };
+};
+
 export const AuthService = {
     registerPatient,
     loginUser,
@@ -303,4 +428,7 @@ export const AuthService = {
     changePassword,
     logoutUser,
     verifyEmailOTP,
+    forgetPassword,
+    resetPassword,
+    googleLoginSuccess,
 };
