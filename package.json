@@ -15,16 +15,18 @@
     "generate": "prisma generate",
     "studio": "prisma studio",
     "push": "prisma db push",
-    "pull": "prisma db pull"
+    "pull": "prisma db pull",
+    "stripe-webhook": "stripe listen --forward-to localhost:5000/webhook"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
     "@types/nodemailer": "^7.0.11",
     "better-auth": "^1.5.6",
-    "cloudinary": "^2.9.0",
+    "cloudinary": "^1.41.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
+    "date-fns": "^4.1.0",
     "dotenv": "^17.3.1",
     "ejs": "^5.0.1",
     "express": "^5.2.1",
@@ -33,8 +35,10 @@
     "ms": "^2.1.3",
     "multer": "^2.1.1",
     "multer-storage-cloudinary": "^4.0.0",
+    "node-cron": "^4.2.1",
     "nodemailer": "^8.0.4",
     "pg": "^8.20.0",
+    "stripe": "^22.0.0",
     "tsx": "^4.21.0",
     "zod": "^4.3.6"
   },

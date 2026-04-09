@@ -3,7 +3,7 @@ import { UserStatus } from "../../../generated/prisma/enums";
 =
 import { prisma } from "../../lib/prisma";
 import { IUpdateAdminPayload } from "./admin.interface";
-import AppError from "../../errorHealpers/AppError";
+import AppError from "../../errorHelpers/AppError";
 
 const getAllAdmins = async () => {
     const admins = await prisma.admin.findMany({

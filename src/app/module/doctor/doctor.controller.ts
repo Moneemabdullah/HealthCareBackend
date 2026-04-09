@@ -4,6 +4,7 @@ import status from "http-status";
 import { sendResponse } from "../../shared/sendResponse";
 import { DoctorService } from "./doctor.service";
 import catchAsync from "../../shared/catchAsync";
+import { IQueryParams } from "../../interfaces/Query.interface";
 
 const getAllDoctors = catchAsync(async (req: Request, res: Response) => {
     const query = req.query;

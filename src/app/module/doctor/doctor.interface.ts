@@ -20,3 +20,11 @@ export interface IUpdateDoctorPayload {
     };
     specialties?: IUpdateDoctorSpecialtyPayload[];
 }
+
+export interface IQueryParams {
+    specialty?: string;
+    include?: string;
+    searchTerm?: string;
+    page?: number;
+    limit?: number;
+}

@@ -1,14 +1,16 @@
 import status from "http-status";
 import { Doctor, Prisma } from "../../../generated/prisma/client";
 import { UserStatus } from "../../../generated/prisma/enums";
+import AppError from "../../errorHelpers/AppError";
+import { IQueryParams } from "../../interfaces/Query.interface";
 import { prisma } from "../../lib/prisma";
+import { QueryBuilder } from "../../utils/QueryBuilder";
 import {
     doctorFilterableFields,
     doctorIncludeConfig,
     doctorSearchableFields,
 } from "./doctor.constant";
 import { IUpdateDoctorPayload } from "./doctor.interface";
-import AppError from "../../errorHealpers/AppError";
 
 // /doctors?specialty=cardiology&include=doctorSchedules,appointments
 const getAllDoctors = async (query: IQueryParams) => {
@@ -59,7 +61,6 @@ const getAllDoctors = async (query: IQueryParams) => {
         .fields()
         .execute();
 
-    console.log(result);
     return result;
 };
 

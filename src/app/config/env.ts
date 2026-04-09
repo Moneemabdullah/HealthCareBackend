@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import AppError from "../errorHealpers/AppError";
+import AppError from "../errorHelpers/AppError";
 import status from "http-status";
 
 dotenv.config();
@@ -30,6 +30,10 @@ interface EnvConfig {
     CLOUDINARY_CLOUD_NAME?: string;
     CLOUDINARY_API_KEY?: string;
     CLOUDINARY_API_SECRET?: string;
+    STRIPE_: {
+        SECRET_KEY: string;
+        WEBHOOK_SECRET: string;
+    };
 }
 
 const loadEnvVariable = (): EnvConfig => {
@@ -57,6 +61,8 @@ const loadEnvVariable = (): EnvConfig => {
         "CLOUDINARY_CLOUD_NAME",
         "CLOUDINARY_API_KEY",
         "CLOUDINARY_API_SECRET",
+        "STRIPE_SECRET_KEY",
+        "STRIPE_WEBHOOK_SECRET",
     ];
 
     requiredEnvVars.forEach((varName) => {
@@ -99,6 +105,10 @@ const loadEnvVariable = (): EnvConfig => {
         CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME as string,
         CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY as string,
         CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET as string,
+        STRIPE_: {
+            SECRET_KEY: process.env.STRIPE_SECRET_KEY as string,
+            WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET as string,
+        },
     };
 };
 

@@ -2,8 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import status from "http-status";
 import z from "zod";
 import { envVars } from "../config/env";
-import AppError from "../errorHealpers/AppError";
-import { handleZodError } from "../errorHealpers/handleZodError";
+import AppError from "../errorHelpers/AppError";
+import { handleZodError } from "../errorHelpers/handleZodError";
 import { IErrorResponse, TErrorSource } from "../interfaces/error.interface";
 import { deleteFileFromCloudinary } from "../config/cloudinary.config";
 

@@ -2,7 +2,7 @@ import status from "http-status";
 import { JwtPayload } from "jsonwebtoken";
 import { Role, UserStatus } from "../../../generated/prisma/client.js";
 import { envVars } from "../../config/env.js";
-import AppError from "../../errorHealpers/AppError.js";
+import AppError from "../../errorHelpers/AppError.js";
 import { IRequestUser } from "../../interfaces/requestUser.interface.js";
 import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
